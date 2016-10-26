@@ -18,61 +18,60 @@ resource "aws_internet_gateway" "prod-gateway" {
   vpc_id = "${aws_vpc.prod.id}"
 }
 
-# Create Public Subnet in us-east-1a AZ
-resource "aws_subnet" "us-east-1a-public" {
+# Create Public Subnet in AZ-1
+resource "aws_subnet" "az1-public" {
   vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${var.prod_vpc_public_subnet_1_cidr}"
-  availability_zone = "us-east-1a"
+  cidr_block = "${lookup(var.prod_public_subnets, "az1.cidr")}"
+  availability_zone = "${lookup(var.prod_public_subnets, "az1.availability_zone")}"
 
   tags {
     Name = "Public Subnet 1"
   }
 }
 
-# Create Public Subnet in us-east-1b AZ
-resource "aws_subnet" "us-east-1b-public" {
+# Create Public Subnet in AZ-2
+resource "aws_subnet" "az2-public" {
   vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${var.prod_vpc_public_subnet_2_cidr}"
-  availability_zone = "us-east-1b"
+  cidr_block = "${lookup(var.prod_public_subnets, "az2.cidr")}"
+  availability_zone = "${lookup(var.prod_public_subnets, "az2.availability_zone")}"
 
   tags {
     Name = "Public Subnet 2"
   }
 }
 
-# Create Private Subnet in us-east-1a AZ
-resource "aws_subnet" "us-east-1a-private" {
+# Create Private Subnet in AZ-1
+resource "aws_subnet" "az1-private" {
   vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${var.prod_vpc_private_subnet_1_cidr}"
-  availability_zone = "us-east-1a"
+  cidr_block = "${lookup(var.prod_private_subnets, "az1.cidr")}"
+  availability_zone = "${lookup(var.prod_private_subnets, "az1.availability_zone")}"
 
   tags {
     Name = "Private Subnet 1"
   }
 }
 
-# Create Private Subnet in us-east-1b AZ
-resource "aws_subnet" "us-east-1b-private" {
+# Create Private Subnet in AZ-2
+resource "aws_subnet" "az2-private" {
   vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${var.prod_vpc_private_subnet_2_cidr}"
-  availability_zone = "us-east-1b"
+  cidr_block = "${lookup(var.prod_private_subnets, "az2.cidr")}"
+  availability_zone = "${lookup(var.prod_private_subnets, "az2.availability_zone")}"
 
   tags {
     Name = "Private Subnet 2"
   }
 }
 
-# Create Private Subnet in us-east-1d AZ
-resource "aws_subnet" "us-east-1d-private" {
+# Create Private Subnet in AZ-3
+resource "aws_subnet" "az3-private" {
   vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${var.prod_vpc_private_subnet_3_cidr}"
-  availability_zone = "us-east-1d"
+  cidr_block = "${lookup(var.prod_private_subnets, "az3.cidr")}"
+  availability_zone = "${lookup(var.prod_private_subnets, "az3.availability_zone")}"
 
   tags {
     Name = "Private Subnet 3"
   }
 }
-
 # Create Route Table for Public Subnets
 resource "aws_route_table" "prod-public" {
   vpc_id = "${aws_vpc.prod.id}"
@@ -102,28 +101,28 @@ resource "aws_route_table" "prod-private" {
 }
 
 # Associate route table with public subnets
-resource "aws_route_table_association" "us-east-1a-public" {
-  subnet_id = "${aws_subnet.us-east-1a-public.id}"
+resource "aws_route_table_association" "az1-public" {
+  subnet_id = "${aws_subnet.az1-public.id}"
   route_table_id = "${aws_route_table.prod-public.id}"
 }
 
-resource "aws_route_table_association" "us-east-1b-public" {
-  subnet_id = "${aws_subnet.us-east-1b-public.id}"
+resource "aws_route_table_association" "az2-public" {
+  subnet_id = "${aws_subnet.az2-public.id}"
   route_table_id = "${aws_route_table.prod-public.id}"
 }
 
-resource "aws_route_table_association" "us-east-1a-private" {
-  subnet_id = "${aws_subnet.us-east-1a-private.id}"
+resource "aws_route_table_association" "az1-private" {
+  subnet_id = "${aws_subnet.az1-private.id}"
   route_table_id = "${aws_route_table.prod-private.id}"
 }
 
-resource "aws_route_table_association" "us-east-1b-private" {
-  subnet_id = "${aws_subnet.us-east-1b-private.id}"
+resource "aws_route_table_association" "az2-private" {
+  subnet_id = "${aws_subnet.az2-private.id}"
   route_table_id = "${aws_route_table.prod-private.id}"
 }
 
-resource "aws_route_table_association" "us-east-1d-private" {
-  subnet_id = "${aws_subnet.us-east-1d-private.id}"
+resource "aws_route_table_association" "az3-private" {
+  subnet_id = "${aws_subnet.az3-private.id}"
   route_table_id = "${aws_route_table.prod-private.id}"
 }
 
@@ -187,8 +186,8 @@ resource "aws_security_group" "prod-nat" {
   }
 }
 
-resource "aws_key_pair" "upwork-test" {
-  key_name = "upwork-test"
+resource "aws_key_pair" "prod-key-pair" {
+  key_name = "${var.key_name}"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDJ1em2uxFXLX2nQ/W7O7L0D+1S9GonhqeKdTm0E4jXFjxFw5eEVl5fqW7Xuzl/UTLZhIRvG3x/4ANOVvahOdwd79ERIDQNoJHusnuZAoj0ekzllczwOp8R4Ylx5ulCKQbMDVXRzhhO125MzHVEqFMRnzF0lQES6gW/I4CqhkOYZ1kc5dVt2WlKyZSNRm5JaFgRnRZZFPnqNrfsELJGrZGFZbguQRkDJVKCtl2C/Lhc/E1jCadLP3C8PdLD9ehTxLLlT7ryGgGrdZocN3Pe1tkcwMFlemo1G9AmdW2R+9K04B5OSRSjb1yOUNlxGpdXtOLP2PErHsibi1JgNWZZTx//nwZ1GsmAAMAs82wBMJ6YZKOyf9JYEaU+9rHVQGnvj0RsR0BSnJvr0l0Y7e1AXXpULu65GytMXjXAFfKFFlsVb9MGK+DdyoL+MaEFu1vJ4E3j7QlUvv8H+gPQWesCxRjrFhyOcpYZg6kKbB3T+NaYvPFU2C6kI0Ygpj0W5wcoLzeqWtnnvfE5mkZLCY0lrv25u2iuJu23dcZQmwNXPg+K49/0d0P6bG9AyMZPQR3WgOSWn9V6Hl3FaaLMTWLN1saTk95Z9V+iQ0VEoOjDocY6NXTqCT/nPEx+9gp2ojC6VupnXhhrLZy2rwFiNJF1+SUbPgs+N9RffGboLczfMzHKaw== mail2mayank@gmail.com"
 }
 
@@ -197,7 +196,7 @@ resource "aws_instance" "prod-nat" {
   instance_type = "t2.micro"
   key_name = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.prod-nat.id}"]
-  subnet_id = "${aws_subnet.us-east-1a-public.id}"
+  subnet_id = "${aws_subnet.az1-public.id}"
   associate_public_ip_address = true
   source_dest_check = false
   tags {

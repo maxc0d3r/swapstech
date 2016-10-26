@@ -51,8 +51,6 @@ resource "aws_iam_instance_profile" "prod-iam-profile" {
   }
 }
 
-
-
 # Security group for Loadbalancer for Web Cluster
 resource "aws_security_group" "prod-web" {
   name = "prod_web"
@@ -101,6 +99,7 @@ resource "aws_security_group" "prod-web" {
   }
 }
 
+# Security group to allow access to all services on private network inside of VPC.
 resource "aws_security_group" "prod-internal" {
   name = "prod-internal"
   description = "Allow access internally within VPC"
@@ -127,7 +126,7 @@ resource "aws_security_group" "prod-internal" {
 resource "aws_elb" "prod-tomcat-lb" {
   name = "prod-tomcat-lb"
 
-  subnets = ["${aws_subnet.us-east-1a-public.id}","${aws_subnet.us-east-1b-public.id}"]
+  subnets = ["${aws_subnet.az1-public.id}","${aws_subnet.az2-public.id}"]
   security_groups = ["${aws_security_group.prod-web.id}"]
   listener {
     instance_port = 80
@@ -149,8 +148,8 @@ resource "aws_elb" "prod-tomcat-lb" {
 }
 
 resource "aws_route53_record" "prod-tomcat-lb" {
-  zone_id = "${aws_route53_zone.upwork.zone_id}"
-  name = "foo.prod.upwork.org"
+  zone_id = "${aws_route53_zone.prod_zone_public.zone_id}"
+  name = "foo"
   type = "CNAME"
   ttl = "300"
   records = ["${aws_elb.prod-tomcat-lb.dns_name}"]
@@ -158,10 +157,10 @@ resource "aws_route53_record" "prod-tomcat-lb" {
 
 resource "aws_autoscaling_group" "prod-tomcat-asg" {
   name = "prod-tomcat-asg"
-  vpc_zone_identifier = ["${aws_subnet.us-east-1a-private.id}","${aws_subnet.us-east-1b-private.id}"]
-  max_size = "${var.prod_tomcat_asg_max}"
-  min_size = "${var.prod_tomcat_asg_min}"
-  desired_capacity = "${var.prod_tomcat_asg_desired}"
+  vpc_zone_identifier = ["${aws_subnet.az1-private.id}","${aws_subnet.az2-private.id}"]
+  max_size = "${lookup(var.prod_asgs,"tomcat.max")}"
+  min_size = "${lookup(var.prod_asgs,"tomcat.min")}"
+  desired_capacity = "${lookup(var.prod_asgs,"tomcat.desired")}"
   force_delete = true
   launch_configuration = "${aws_launch_configuration.prod-tomcat-lc.name}"
   load_balancers = ["${aws_elb.prod-tomcat-lb.name}"]
@@ -179,6 +178,72 @@ resource "aws_launch_configuration" "prod-tomcat-lc" {
 
   security_groups = ["${aws_security_group.prod-internal.id}"]
   user_data = "${file("prod_tomcat_userdata.sh")}"
+  key_name = "${var.key_name}"
+  iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
+}
+
+resource "aws_elb" "prod-rabbitmq-lb" {
+  name = "prod-rabbitmq-lb"
+
+  internal = true
+  subnets = ["${aws_subnet.az1-private.id}","${aws_subnet.az2-private.id}"]
+  security_groups = ["${aws_security_group.prod-internal.id}"]
+  listener {
+    instance_port = 5672
+    instance_protocol = "tcp"
+    lb_port = 5672
+    lb_protocol = "tcp"
+  }
+  listener {
+    instance_port = 15672
+    instance_protocol = "http"
+    lb_port = 15672
+    lb_protocol = "http"
+  }
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 3
+    target = "TCP:5672"
+    interval = 30
+  }
+  cross_zone_load_balancing = true
+  tags {
+    Name = "prod-rabbitmq-lb"
+  }
+}
+
+resource "aws_route53_record" "prod-rabbitmq-lb" {
+  zone_id = "${aws_route53_zone.prod_zone_public.zone_id}"
+  name = "rabbitmq"
+  type = "CNAME"
+  ttl = "300"
+  records = ["${aws_elb.prod-rabbitmq-lb.dns_name}"]
+}
+
+resource "aws_autoscaling_group" "prod-rabbitmq-asg" {
+  name = "prod-rabbitmq-asg"
+  vpc_zone_identifier = ["${aws_subnet.az1-private.id}","${aws_subnet.az2-private.id}"]
+  max_size = "${lookup(var.prod_asgs,"rabbitmq.max")}"
+  min_size = "${lookup(var.prod_asgs,"rabbitmq.min")}"
+  desired_capacity = "${lookup(var.prod_asgs,"rabbitmq.desired")}"
+  force_delete = true
+  launch_configuration = "${aws_launch_configuration.prod-rabbitmq-lc.name}"
+  load_balancers = ["${aws_elb.prod-rabbitmq-lb.name}"]
+  tag {
+    key = "ASG-Name"
+    value = "prod-rabbitmq-asg"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_launch_configuration" "prod-rabbitmq-lc" {
+  name = "prod-rabbitmq-lc"
+  image_id = "${lookup(var.amis, var.prod_region)}"
+  instance_type = "${var.instance_type}"
+
+  security_groups = ["${aws_security_group.prod-internal.id}"]
+  user_data = "${file("prod_rabbitmq_userdata.sh")}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
 }
