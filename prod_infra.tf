@@ -177,7 +177,7 @@ resource "aws_launch_configuration" "prod-tomcat-lc" {
   instance_type = "${var.instance_type}"
 
   security_groups = ["${aws_security_group.prod-internal.id}"]
-  user_data = "${file("prod_tomcat_userdata.sh")}"
+  user_data = "${file("scripts/userdata_tomcat.sh")}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
 }
@@ -243,7 +243,7 @@ resource "aws_launch_configuration" "prod-rabbitmq-lc" {
   instance_type = "${var.instance_type}"
 
   security_groups = ["${aws_security_group.prod-internal.id}"]
-  user_data = "${file("prod_rabbitmq_userdata.sh")}"
+  user_data = "${file("scripts/userdata_rabbitmq.sh")}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
 }
