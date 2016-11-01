@@ -1,0 +1,1 @@
+default['mongo']['version'] = nil

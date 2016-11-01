@@ -3,16 +3,13 @@ apt-get update -y
 
 ID=`curl -s http://169.254.169.254/latest/meta-data/instance-id | tr -d 'i-'`
 REGION="`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's:\([0-9][0-9]*\)[a-z]*\$:\\1:'`"
-HOSTNAME="tomcat-${ID}"
-hostnamectl set-hostname $HOSTNAME
-echo $HOSTNAME > /var/lib/cloud/data/previous-hostname
-sed -i "s/^127.0.0.1.*/127.0.0.1\ $HOSTNAME\ $HOSTNAME.${DOMAIN} localhost localhost.localdomain localhost4 localhost4.localdomain4/g" /etc/hosts
+TAGNAME="mongo-${ID}"
 
 apt-get install -y python-pip
 pip install awscli
 apt-get install git
 
-aws ec2 create-tags --region $REGION --resources "i-${ID}" --tags Key=Name,Value=$HOSTNAME
+aws ec2 create-tags --region $REGION --resources "i-${ID}" --tags Key=Name,Value=$TAGNAME
 
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
@@ -73,4 +70,4 @@ chmod 400 /root/.ssh/id_rsa
 ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
 curl -L https://www.opscode.com/chef/install.sh | sudo bash
 cd /tmp; git clone git@github.com:maxc0d3r/swapstech.git
-chef-solo -c /tmp/swapstech/chef/solo.rb -o base,tomcat
+chef-solo -c /tmp/chef/solo.rb -o base,mongo
