@@ -4,13 +4,13 @@ execute 'apt-get-update' do
 end
 
 # Install the latest rabbitmq server version
-package 'rabbitmq-server"
+package 'rabbitmq-server'
 
 bash 'setup_autocluster' do
   cwd "/tmp"
   code <<-EOH
-    wget https://github.com/aweber/rabbitmq-autocluster/releases/download/#{rabbitmq_autocluster_ver}/autocluster-#{rabbitmq_autocluster_ver}.tgz
-    tar -zxf autocluster-#{rabbitmq_autocluster_ver}.tgz
+    wget https://github.com/rhoegg/rabbitmq-autocluster/releases/download/#{node['autocluster']['version']}/autocluster-#{node['autocluster']['version']}.tgz
+    tar -zxf autocluster-#{node['autocluster']['version']}.tgz
     cp -r plugins /usr/lib/rabbitmq/lib/rabbitmq_server-*/
   EOH
 end
