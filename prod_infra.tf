@@ -214,7 +214,7 @@ resource "aws_elb" "prod-rabbitmq-lb" {
 }
 
 resource "aws_route53_record" "prod-rabbitmq-lb" {
-  zone_id = "${aws_route53_zone.prod_zone_public.zone_id}"
+  zone_id = "${aws_route53_zone.prod_zone_private.zone_id}"
   name = "rabbitmq"
   type = "CNAME"
   ttl = "300"
