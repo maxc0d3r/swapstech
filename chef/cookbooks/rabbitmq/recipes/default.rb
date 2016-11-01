@@ -21,12 +21,19 @@ end
 
 cookbook_file '/var/lib/rabbitmq/.erlang.cookie' do
   source 'erlang.cookie'
-  owner 'root'
-  group 'root'
+  owner 'rabbitmq'
+  group 'rabbitmq'
   mode '0400'
 end
 
 cookbook_file '/etc/rabbitmq/rabbitmq.config' do
+  source 'rabbitmq.config'
+  owner 'root'
+  group 'root'
+  mode '0644'
+end
+
+cookbook_file '/etc/rabbitmq/rabbitmq-env.conf' do
   source 'rabbitmq.config'
   owner 'root'
   group 'root'
