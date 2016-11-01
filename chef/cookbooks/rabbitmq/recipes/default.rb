@@ -34,7 +34,7 @@ cookbook_file '/etc/rabbitmq/rabbitmq.config' do
 end
 
 cookbook_file '/etc/rabbitmq/rabbitmq-env.conf' do
-  source 'rabbitmq.config'
+  source 'rabbitmq-env.conf'
   owner 'root'
   group 'root'
   mode '0644'
