@@ -13,10 +13,12 @@ bash 'setup_autocluster' do
     tar -zxf autocluster-#{node['autocluster']['version']}.tgz
     cp -r plugins /usr/lib/rabbitmq/lib/rabbitmq_server-*/
   EOH
+  not_if 'grep autocluster /etc/rabbitmq/enabled_plugins'
 end
 
 execute 'enable_rabbitmq_plugins' do
   command 'rabbitmq-plugins enable autocluster'
+  not_if 'grep autocluster /etc/rabbitmq/enabled_plugins'
 end
 
 cookbook_file '/var/lib/rabbitmq/.erlang.cookie' do
