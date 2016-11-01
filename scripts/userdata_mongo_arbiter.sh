@@ -3,7 +3,7 @@ apt-get update -y
 
 ID=`curl -s http://169.254.169.254/latest/meta-data/instance-id | tr -d 'i-'`
 REGION="`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's:\([0-9][0-9]*\)[a-z]*\$:\\1:'`"
-TAGNAME="mongo-${ID}"
+TAGNAME="mongo-arbiter-${ID}"
 
 apt-get install -y python-pip
 pip install awscli
@@ -70,4 +70,7 @@ chmod 400 /root/.ssh/id_rsa
 ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
 curl -L https://www.opscode.com/chef/install.sh | sudo bash
 cd /tmp; git clone git@github.com:maxc0d3r/swapstech.git
+cat > /tmp/node.json <<EOF
+{ "mongo_instance_type": "arbiter" }
+EOF
 chef-solo -c /tmp/chef/solo.rb -o base,mongo

@@ -7,7 +7,7 @@
  storage:
    dbPath: /var/lib/mongodb
    journal:
-     enabled: <%= @is_arbiter %>
+     enabled: <% node['mongo_instance_type'] == 'arbiter' ? false : true %>
  #  engine:
  #  mmapv1:
  #  wiredTiger:

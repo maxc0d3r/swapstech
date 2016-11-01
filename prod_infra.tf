@@ -249,84 +249,31 @@ resource "aws_launch_configuration" "prod-rabbitmq-lc" {
 }
 
 resource "aws_instance" "mongo-master" {
-  name = "mongo-master"
-  image_id = "${lookup(var.amis, var.prod_region)}"
+  ami = "${lookup(var.amis, var.prod_region)}"
   instance_type = "${var.instance_type}"
   security_groups = ["${aws_security_group.prod-internal.id}"]
   key_name = "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
   subnet_id = "${aws_subnet.az1-private.id}"
-  provisioner "file" {
-    source = "chef"
-    destination = "/tmp"
-  }
-  provisioner "file" {
-    content = "{ \"is_arbiter\": false}"
-  }
-  provisioner "file" {
-    source = "scripts/userdata_mongo.sh"
-    destination = "/tmp"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/userdata_mongo.sh",
-      "/tmp/userdata_mongo.sh"
-    ]
-  }
+  user_data = "${file("scripts/userdata_mongo_master.sh")}"
 }
 
-resource "aws_instance" "mongo-slave01" {
-  name = "mongo-slave01"
-  image_id = "${lookup(var.amis, var.prod_region)}"
+resource "aws_instance" "mongo-slave" {
+  ami = "${lookup(var.amis, var.prod_region)}"
   instance_type = "${var.instance_type}"
   security_groups = ["${aws_security_group.prod-internal.id}"]
-  user_data = "${file("scripts/userdata_mongodb.sh")}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
   subnet_id = "${aws_subnet.az2-private.id}"
-  provisioner "file" {
-    source = "chef"
-    destination = "/tmp"
-  }
-  provisioner "file" {
-    content = "{ \"is_arbiter\": false}"
-  }
-  provisioner "file" {
-    source = "scripts/userdata_mongo.sh"
-    destination = "/tmp"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/userdata_mongo.sh",
-      "/tmp/userdata_mongo.sh"
-    ]
-  }
+  user_data = "${file("scripts/userdata_mongo_slave.sh")}"
 }
 
 resource "aws_instance" "mongo-arbiter" {
-  name = "mongo-arbiter"
-  image_id = "${lookup(var.amis, var.prod_region)}"
+  ami = "${lookup(var.amis, var.prod_region)}"
   instance_type = "${var.instance_type}"
   security_groups = ["${aws_security_group.prod-internal.id}"]
-  user_data = "${file("scripts/userdata_mongodb.sh")}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
-  subnet_id = "${aws_subnet.az3-private.id}"
-  provisioner "file" {
-    source = "chef"
-    destination = "/tmp"
-  }
-  provisioner "file" {
-    content = "{ \"is_arbiter\": true}"
-  }
-  provisioner "file" {
-    source = "scripts/userdata_mongo.sh"
-    destination = "/tmp"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/userdata_mongo.sh",
-      "/tmp/userdata_mongo.sh"
-    ]
-  }
+  subnet_id = "${aws_subnet.az2-private.id}"
+  user_data = "${file("scripts/userdata_mongo_arbiter.sh")}"
 }
