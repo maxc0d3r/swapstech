@@ -79,6 +79,8 @@ SLAVE_IP=`aws ec2 describe-instances --region $REGION --filters 'Name=instance-s
 ARBITER_IP=`aws ec2 describe-instances --region $REGION --filters 'Name=instance-state-name,Values=running' 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
 mongo <<EOF
 rs.initiate()
+EOF
+mongo <<EOF
 rs.add($SLAVE_IP)
 rs.addArb($ARBITER_IP)
 EOF
