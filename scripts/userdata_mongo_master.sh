@@ -75,9 +75,10 @@ cat > /tmp/nodes.json <<EOF
 EOF
 chef-solo -c /tmp/swapstech/chef/solo.rb -o base,mongo
 sleep 60
-SLAVE_IP = `aws ec2 describe-instances --region $REGION --filters 'Name=tag:Name,Values=mongo-slave*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
-ARBITER_IP = `aws ec2 describe-instances --region $REGION --filters 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+SLAVE_IP=`aws ec2 describe-instances --region $REGION --filters 'Name=tag:Name,Values=mongo-slave*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+ARBITER_IP=`aws ec2 describe-instances --region $REGION --filters 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
 mongo <<EOF
+rs.initiate()
 rs.add("$SLAVE_IP")
 rs.addArb("$ARBITER_IP")
 EOF
