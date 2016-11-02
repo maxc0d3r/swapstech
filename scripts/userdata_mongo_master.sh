@@ -70,7 +70,14 @@ chmod 400 /root/.ssh/id_rsa
 ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
 curl -L https://www.opscode.com/chef/install.sh | sudo bash
 cd /tmp; git clone git@github.com:maxc0d3r/swapstech.git
-cat > /tmp/node.json <<EOF
+cat > /tmp/nodes.json <<EOF
 { "mongo_instance_type": "master" }
 EOF
-chef-solo -c /tmp/chef/solo.rb -o base,mongo
+chef-solo -c /tmp/swapstech/chef/solo.rb -o base,mongo
+sleep 60
+SLAVE_IP = `aws ec2 describe-instances --region $REGION --filters 'Name=tag:Name,Values=mongo-slave*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+ARBITER_IP = `aws ec2 describe-instances --region $REGION --filters 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+mongo <<EOF
+rs.add("$SLAVE_IP")
+rs.addArb("$ARBITER_IP")
+EOF
