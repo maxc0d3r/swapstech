@@ -1,0 +1,10 @@
+name             'openvpn2-test'
+maintainer       'The Authors'
+maintainer_email 'you@example.com'
+license          'all_rights'
+description      'Installs/Configures openvpn2-test'
+long_description 'Installs/Configures openvpn2-test'
+version          '0.1.0'
+
+depends 'aws'
+depends 'openvpn2'

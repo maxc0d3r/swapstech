@@ -123,6 +123,46 @@ resource "aws_security_group" "prod-internal" {
   }
 }
 
+# Security group for openvpn instance.
+resource "aws_security_group" "vpn" {
+  name = "vpn"
+  description = "Allow access via VPN tunnel"
+
+  ingress {
+    from_port = 1194
+    to_port = 1194
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 1194
+    to_port = 1194
+    protocol = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "prod-vpn" {
+  ami = "${lookup(var.amis, var.prod_region)}"
+  instance_type = "${var.instance_type}"
+  security_groups = ["${aws_security_group.vpn.id}","${aws_security_group.prod-internal.id}"]
+  key_name = "${var.key_name}"
+  iam_instance_profile = "${aws_iam_instance_profile.prod-iam-profile.id}"
+  subnet_id = "${aws_subnet.az1-public.id}"
+  user_data = "${file("scripts/userdata_vpn.sh")}"
+  associate_public_ip_address = true
+  source_dest_check = false
+  tags {
+    Name = "Production OpenVPN"
+  }
+}
+
 resource "aws_elb" "prod-tomcat-lb" {
   name = "prod-tomcat-lb"
 

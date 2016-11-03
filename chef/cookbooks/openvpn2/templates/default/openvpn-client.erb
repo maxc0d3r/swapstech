@@ -1,0 +1,42 @@
+#!/bin/bash
+
+GATEWAY="<%= @gateway %>"
+KEYS_DIR="<%= @keys_dir %>"
+
+function abort() {
+  echo -e "fatal: ${1}"
+  exit 1
+}
+
+function usage() {
+  echo -e "openvpn-client USER --gateway <host>"
+}
+
+user=${1}
+if [ "${2}" == "--gateway" ]; then
+  gateway=${3}
+else
+  gateway=GATEWAY
+fi
+
+[ -z ${user} ] &&  abort "user is required\n $(usage)"
+[ -z ${gateway} ] &&  abort "gateway is required\n $(usage)"
+[ -z ${KEYS_DIR} ] &&  abort "environment variable KEYS_DIR is required\n $(usage)"
+
+pushd ${KEYS_DIR}
+
+# create keys for the user if missing
+if ! [ -f "keys/${user}.key" ]; then
+  authority generate ${user}
+fi
+
+mkdir -p ${user}
+
+popd
+
+
+cp certs/ca.crt certs/#{u['id']}.crt keys/#{u['id']}.key #{u['id']}
+
+cd #{u['id']}
+tar czf #{u['id']}.tgz * && mv #{u['id']}.tgz ..
+chmod 777 #{u['id']}.tgz
