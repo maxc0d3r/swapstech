@@ -71,9 +71,14 @@ wYoXvGPkzZ7NxciEerMxYmswLwIPl8AvwsK+m7iZx4FMv52xDZBhEG2J1aw=
 EOF
 chmod 400 /root/.ssh/id_rsa
 ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+
+# Install chef and berkshelf
 curl -L https://www.opscode.com/chef/install.sh | sudo bash
+/opt/chef/embedded/bin/gem install --no-rdoc --no-ri berkshelf
+ln -s /opt/chef/embedded/bin/berks /usr/local/bin
+
 cd /tmp; git clone git@github.com:maxc0d3r/swapstech.git
 cat > /tmp/nodes.json <<EOF
 {  }
 EOF
-chef-solo -c /tmp/swapstech/chef/solo.rb -o base,tomcat
+chef-solo -c /tmp/swapstech/chef/solo.rb -o base,sdx_tomcat
