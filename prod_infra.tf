@@ -146,6 +146,10 @@ resource "aws_security_group" "vpn" {
     protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  vpc_id = "${aws_vpc.prod.id}"
+  tags {
+    Name = "VPNSG"
+  }
 }
 
 resource "aws_instance" "prod-vpn" {
