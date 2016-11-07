@@ -85,7 +85,11 @@ ARBITER_IP=`aws ec2 describe-instances --region $REGION --filters 'Name=instance
 mongo <<EOF
 rs.initiate()
 EOF
+sleep 10
 mongo <<EOF
 rs.add($SLAVE_IP)
+EOF
+sleep 10
+mongo <<EOF
 rs.addArb($ARBITER_IP)
 EOF
