@@ -29,6 +29,7 @@ grep 'openvpn' /tmp/service
 if [ $? -eq 0 ]; then
 cat > /tmp/nodes.json <<EOF
 {
+  "aws_region": "${aws_region}",
   "environment": "${environment}",
   "service": "${service}",
   "openvpn" : {
@@ -49,6 +50,7 @@ EOF
 else
 cat > /tmp/nodes.json <<EOF
 {
+  "aws_region": "${aws_region}",
   "environment": "${environment}",
   "service": "${service}"
 }

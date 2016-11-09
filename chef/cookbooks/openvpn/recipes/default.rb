@@ -30,6 +30,23 @@ template '/etc/openvpn/server.conf' do
   )
 end
 
+if node['environment'] == 'Production'
+  node.set['remote_environment'] = 'DR'
+else
+  node.set['remote_environment'] = 'Production'
+end
+
+# Setup openvpn client config
+template '/etc/openvpn/client.conf' do
+  source 'openvpn-client.conf.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables(
+    :remote_environment => node['remote_environment']
+  )
+end
+
 # Setup easy-rsa vars
 template '/etc/openvpn/easy-rsa/vars' do
   source 'easy-rsa-vars.erb'
@@ -76,13 +93,20 @@ template '/usr/local/bin/setup-openvpn' do
   owner 'root'
   group 'root'
   mode '0755'
-  variable(
+  variables(
     :environment => node['environment']
   )
 end
 
 # Setup directory to store keys
 directory '/etc/openvpn/easy-rsa/keys' do
+  owner 'root'
+  group 'root'
+  mode '0755'
+end
+
+# Setup directory to store client keys
+directory '/etc/openvpn/easy-rsa/keys/client' do
   owner 'root'
   group 'root'
   mode '0755'
