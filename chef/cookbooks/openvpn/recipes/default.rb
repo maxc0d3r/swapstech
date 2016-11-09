@@ -71,11 +71,14 @@ cookbook_file '/etc/openvpn/easy-rsa/build-key' do
 end
 
 # Setup script to build desired keys and certificates
-cookbook_file '/usr/local/bin/setup-openvpn' do
+template '/usr/local/bin/setup-openvpn' do
   source 'setup-openvpn'
   owner 'root'
   group 'root'
   mode '0755'
+  variable(
+    :environment => node['environment']
+  )
 end
 
 # Setup directory to store keys
@@ -91,7 +94,8 @@ execute 'setup-openvpn' do
   creates '/etc/openvpn/easy-rsa/openvpn-setup.txt'
 end
 
-# Enable openvpn service to startup on boot and also start the service
-service 'openvpn' do
-  action [:enable, :start]
+# Start openvpn
+execute 'start-openvpn' do
+  command 'cd /etc/openvpn; openvpn --config /etc/openvpn/server.conf --writepid /var/run/openvpn.pid &'
+  creates '/var/run/openvpn.pid'
 end

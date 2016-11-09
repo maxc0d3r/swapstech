@@ -5,6 +5,7 @@ cd /etc/openvpn/easy-rsa
 ./clean-all
 openssl dhparam -out keys/dh2048.pem 2048
 ./build-ca
-export KEY_NAME='prod-vpn'
+export KEY_NAME='server'
 ./build-key-server $KEY_NAME
 touch /etc/openvpn/easy-rsa/openvpn-setup.txt
+./build-key <%= @environment %>

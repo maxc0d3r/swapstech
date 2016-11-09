@@ -1,28 +1,28 @@
 provider "aws" {
   access_key = "${var.access_key}"
   secret_key = "${var.secret_key}"
-  region = "${var.prod_region}"
+  region = "${var.aws_region}"
 }
 
-# Create production VPC
-resource "aws_vpc" "prod" {
-  cidr_block = "${var.prod_vpc_cidr}"
+# Create VPC
+resource "aws_vpc" "default" {
+  cidr_block = "${var.vpc_cidr}"
   enable_dns_hostnames = true
   tags {
-    Name = "Production VPC"
+    Name = "${var.vpc_name}"
   }
 }
 
-# Create Internet Gateway for production VPC
-resource "aws_internet_gateway" "prod-gateway" {
-  vpc_id = "${aws_vpc.prod.id}"
+# Create Internet Gateway
+resource "aws_internet_gateway" "igw" {
+  vpc_id = "${aws_vpc.default.id}"
 }
 
 # Create Public Subnet in AZ-1
 resource "aws_subnet" "az1-public" {
-  vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${lookup(var.prod_public_subnets, "az1.cidr")}"
-  availability_zone = "${lookup(var.prod_public_subnets, "az1.availability_zone")}"
+  vpc_id = "${aws_vpc.default.id}"
+  cidr_block = "${lookup(var.public_subnets, "az1.cidr")}"
+  availability_zone = "${lookup(var.public_subnets, "az1.availability_zone")}"
 
   tags {
     Name = "Public Subnet 1"
@@ -31,9 +31,9 @@ resource "aws_subnet" "az1-public" {
 
 # Create Public Subnet in AZ-2
 resource "aws_subnet" "az2-public" {
-  vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${lookup(var.prod_public_subnets, "az2.cidr")}"
-  availability_zone = "${lookup(var.prod_public_subnets, "az2.availability_zone")}"
+  vpc_id = "${aws_vpc.default.id}"
+  cidr_block = "${lookup(var.public_subnets, "az2.cidr")}"
+  availability_zone = "${lookup(var.public_subnets, "az2.availability_zone")}"
 
   tags {
     Name = "Public Subnet 2"
@@ -42,9 +42,9 @@ resource "aws_subnet" "az2-public" {
 
 # Create Private Subnet in AZ-1
 resource "aws_subnet" "az1-private" {
-  vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${lookup(var.prod_private_subnets, "az1.cidr")}"
-  availability_zone = "${lookup(var.prod_private_subnets, "az1.availability_zone")}"
+  vpc_id = "${aws_vpc.default.id}"
+  cidr_block = "${lookup(var.private_subnets, "az1.cidr")}"
+  availability_zone = "${lookup(var.private_subnets, "az1.availability_zone")}"
 
   tags {
     Name = "Private Subnet 1"
@@ -53,9 +53,9 @@ resource "aws_subnet" "az1-private" {
 
 # Create Private Subnet in AZ-2
 resource "aws_subnet" "az2-private" {
-  vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${lookup(var.prod_private_subnets, "az2.cidr")}"
-  availability_zone = "${lookup(var.prod_private_subnets, "az2.availability_zone")}"
+  vpc_id = "${aws_vpc.default.id}"
+  cidr_block = "${lookup(var.private_subnets, "az2.cidr")}"
+  availability_zone = "${lookup(var.private_subnets, "az2.availability_zone")}"
 
   tags {
     Name = "Private Subnet 2"
@@ -64,21 +64,26 @@ resource "aws_subnet" "az2-private" {
 
 # Create Private Subnet in AZ-3
 resource "aws_subnet" "az3-private" {
-  vpc_id = "${aws_vpc.prod.id}"
-  cidr_block = "${lookup(var.prod_private_subnets, "az3.cidr")}"
-  availability_zone = "${lookup(var.prod_private_subnets, "az3.availability_zone")}"
+  vpc_id = "${aws_vpc.default.id}"
+  cidr_block = "${lookup(var.private_subnets, "az3.cidr")}"
+  availability_zone = "${lookup(var.private_subnets, "az3.availability_zone")}"
 
   tags {
     Name = "Private Subnet 3"
   }
 }
 # Create Route Table for Public Subnets
-resource "aws_route_table" "prod-public" {
-  vpc_id = "${aws_vpc.prod.id}"
+resource "aws_route_table" "public" {
+  vpc_id = "${aws_vpc.default.id}"
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_internet_gateway.prod-gateway.id}"
+    gateway_id = "${aws_internet_gateway.igw.id}"
+  }
+
+  route {
+    cidr_block = "${var.peer_vpc_cidr}"
+    instance_id = "${aws_instance.vpn.id}"
   }
 
   tags {
@@ -87,12 +92,17 @@ resource "aws_route_table" "prod-public" {
 }
 
 # Create Route Table for Private Subnets
-resource "aws_route_table" "prod-private" {
-  vpc_id = "${aws_vpc.prod.id}"
+resource "aws_route_table" "private" {
+  vpc_id = "${aws_vpc.default.id}"
 
   route {
     cidr_block = "0.0.0.0/0"
-    instance_id = "${aws_instance.prod-nat.id}"
+    instance_id = "${aws_instance.nat.id}"
+  }
+
+  route {
+    cidr_block = "${var.peer_vpc_cidr}"
+    instance_id = "${aws_instance.vpn.id}"
   }
 
   tags {
@@ -103,45 +113,46 @@ resource "aws_route_table" "prod-private" {
 # Associate route table with public subnets
 resource "aws_route_table_association" "az1-public" {
   subnet_id = "${aws_subnet.az1-public.id}"
-  route_table_id = "${aws_route_table.prod-public.id}"
+  route_table_id = "${aws_route_table.public.id}"
 }
 
 resource "aws_route_table_association" "az2-public" {
   subnet_id = "${aws_subnet.az2-public.id}"
-  route_table_id = "${aws_route_table.prod-public.id}"
+  route_table_id = "${aws_route_table.public.id}"
 }
 
 resource "aws_route_table_association" "az1-private" {
   subnet_id = "${aws_subnet.az1-private.id}"
-  route_table_id = "${aws_route_table.prod-private.id}"
+  route_table_id = "${aws_route_table.private.id}"
 }
+
 
 resource "aws_route_table_association" "az2-private" {
   subnet_id = "${aws_subnet.az2-private.id}"
-  route_table_id = "${aws_route_table.prod-private.id}"
+  route_table_id = "${aws_route_table.private.id}"
 }
 
 resource "aws_route_table_association" "az3-private" {
   subnet_id = "${aws_subnet.az3-private.id}"
-  route_table_id = "${aws_route_table.prod-private.id}"
+  route_table_id = "${aws_route_table.private.id}"
 }
 
 # Security group for NAT instance
-resource "aws_security_group" "prod-nat" {
-  name = "prod_nat"
-  description = "Allow traffic to pass from private subnet in Production VPC to Internet"
+resource "aws_security_group" "nat" {
+  name = "nat"
+  description = "Allow traffic to pass from private subnet to Internet"
 
   ingress {
     from_port = 80
     to_port = 80
     protocol = "tcp"
-    cidr_blocks = ["${var.prod_vpc_cidr}"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
   ingress {
     from_port = 443
     to_port = 443
     protocol = "tcp"
-    cidr_blocks = ["${var.prod_vpc_cidr}"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
   ingress {
     from_port = 22
@@ -162,32 +173,32 @@ resource "aws_security_group" "prod-nat" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  vpc_id = "${aws_vpc.prod.id}"
+  vpc_id = "${aws_vpc.default.id}"
 
   tags {
     Name = "NATSG"
   }
 }
 
-resource "aws_key_pair" "prod-key-pair" {
+resource "aws_key_pair" "key-pair" {
   key_name = "${var.key_name}"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDJ1em2uxFXLX2nQ/W7O7L0D+1S9GonhqeKdTm0E4jXFjxFw5eEVl5fqW7Xuzl/UTLZhIRvG3x/4ANOVvahOdwd79ERIDQNoJHusnuZAoj0ekzllczwOp8R4Ylx5ulCKQbMDVXRzhhO125MzHVEqFMRnzF0lQES6gW/I4CqhkOYZ1kc5dVt2WlKyZSNRm5JaFgRnRZZFPnqNrfsELJGrZGFZbguQRkDJVKCtl2C/Lhc/E1jCadLP3C8PdLD9ehTxLLlT7ryGgGrdZocN3Pe1tkcwMFlemo1G9AmdW2R+9K04B5OSRSjb1yOUNlxGpdXtOLP2PErHsibi1JgNWZZTx//nwZ1GsmAAMAs82wBMJ6YZKOyf9JYEaU+9rHVQGnvj0RsR0BSnJvr0l0Y7e1AXXpULu65GytMXjXAFfKFFlsVb9MGK+DdyoL+MaEFu1vJ4E3j7QlUvv8H+gPQWesCxRjrFhyOcpYZg6kKbB3T+NaYvPFU2C6kI0Ygpj0W5wcoLzeqWtnnvfE5mkZLCY0lrv25u2iuJu23dcZQmwNXPg+K49/0d0P6bG9AyMZPQR3WgOSWn9V6Hl3FaaLMTWLN1saTk95Z9V+iQ0VEoOjDocY6NXTqCT/nPEx+9gp2ojC6VupnXhhrLZy2rwFiNJF1+SUbPgs+N9RffGboLczfMzHKaw== mail2mayank@gmail.com"
 }
 
-resource "aws_instance" "prod-nat" {
-  ami = "ami-d2ee95c5"
-  instance_type = "t2.micro"
+resource "aws_instance" "nat" {
+  ami = "${lookup(var.nat_amis, var.aws_region)}"
+  instance_type = "${lookup(var.instance_type, "nat")}"
   key_name = "${var.key_name}"
-  vpc_security_group_ids = ["${aws_security_group.prod-nat.id}"]
+  vpc_security_group_ids = ["${aws_security_group.nat.id}"]
   subnet_id = "${aws_subnet.az1-public.id}"
   associate_public_ip_address = true
   source_dest_check = false
   tags {
-    Name = "Production NATBox"
+    Name = "NATBox"
   }
 }
 
 resource "aws_eip" "nat" {
-    instance = "${aws_instance.prod-nat.id}"
+    instance = "${aws_instance.nat.id}"
     vpc = true
 }

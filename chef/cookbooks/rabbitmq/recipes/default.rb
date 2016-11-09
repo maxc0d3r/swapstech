@@ -28,8 +28,8 @@ cookbook_file '/var/lib/rabbitmq/.erlang.cookie' do
   mode '0400'
 end
 
-cookbook_file '/etc/rabbitmq/rabbitmq.config' do
-  source 'rabbitmq.config'
+template '/etc/rabbitmq/rabbitmq.config' do
+  source 'rabbitmq.config.erb'
   owner 'root'
   group 'root'
   mode '0644'

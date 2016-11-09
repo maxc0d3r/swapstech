@@ -1,3 +1,4 @@
+default['environment'] = 'production'
 default['openvpn']['port'] = '1194'
 default['openvpn']['protocol'] = 'tcp'
 default['openvpn']['server']['ip_block'] = '172.16.0.0'

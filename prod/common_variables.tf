@@ -2,14 +2,6 @@ variable "access_key" {}
 variable "secret_key" {}
 variable "private_key" {}
 
-variable "infra_regions" {
-  default = "us-east-1,us-east-2"
-}
-
-variable "aws_region" {
-  default = "us-east-1"
-}
-
 variable "amis" {
   type = "map"
   default = {
@@ -28,8 +20,22 @@ variable "amis" {
   }
 }
 
-variable "instance_type" {
-  default = "t2.micro"
+variable "nat_amis" {
+  type = "map"
+  default = {
+    us-east-1 = "ami-863b6391",
+    us-east-2 = "ami-8d5a00e8",
+    us-west-1 = "ami-f4e8a394",
+    us-west-2 = "ami-d0c066b0",
+    eu-central-1 = "ami-fd619992",
+    eu-west-1 = "ami-509dd623",
+    ap-northeast-1 = "ami-c50cafa4",
+    ap-northeast-2 = "ami-b036e2de",
+    ap-south-1 = "ami-93b5c1fc",
+    ap-southeast-1 = "ami-df50f1bc",
+    ap-southeast-2 = "ami-ae714dcd",
+    sa-east-1 = "ami-98b824f4"
+  }
 }
 
 variable "public_key_path" {
