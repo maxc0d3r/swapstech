@@ -180,9 +180,9 @@ resource "aws_security_group" "nat" {
   }
 }
 
-resource "aws_key_pair" "key-pair" {
+rresource "aws_key_pair" "key-pair" {
   key_name = "${var.key_name}"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDJ1em2uxFXLX2nQ/W7O7L0D+1S9GonhqeKdTm0E4jXFjxFw5eEVl5fqW7Xuzl/UTLZhIRvG3x/4ANOVvahOdwd79ERIDQNoJHusnuZAoj0ekzllczwOp8R4Ylx5ulCKQbMDVXRzhhO125MzHVEqFMRnzF0lQES6gW/I4CqhkOYZ1kc5dVt2WlKyZSNRm5JaFgRnRZZFPnqNrfsELJGrZGFZbguQRkDJVKCtl2C/Lhc/E1jCadLP3C8PdLD9ehTxLLlT7ryGgGrdZocN3Pe1tkcwMFlemo1G9AmdW2R+9K04B5OSRSjb1yOUNlxGpdXtOLP2PErHsibi1JgNWZZTx//nwZ1GsmAAMAs82wBMJ6YZKOyf9JYEaU+9rHVQGnvj0RsR0BSnJvr0l0Y7e1AXXpULu65GytMXjXAFfKFFlsVb9MGK+DdyoL+MaEFu1vJ4E3j7QlUvv8H+gPQWesCxRjrFhyOcpYZg6kKbB3T+NaYvPFU2C6kI0Ygpj0W5wcoLzeqWtnnvfE5mkZLCY0lrv25u2iuJu23dcZQmwNXPg+K49/0d0P6bG9AyMZPQR3WgOSWn9V6Hl3FaaLMTWLN1saTk95Z9V+iQ0VEoOjDocY6NXTqCT/nPEx+9gp2ojC6VupnXhhrLZy2rwFiNJF1+SUbPgs+N9RffGboLczfMzHKaw== mail2mayank@gmail.com"
+  public_key = "${file("./id_rsa.pub")}"
 }
 
 resource "aws_instance" "nat" {

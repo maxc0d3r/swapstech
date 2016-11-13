@@ -89,7 +89,7 @@ end
 
 # Setup script to build desired keys and certificates
 template '/usr/local/bin/setup-openvpn' do
-  source 'setup-openvpn'
+  source 'setup-openvpn.erb'
   owner 'root'
   group 'root'
   mode '0755'
