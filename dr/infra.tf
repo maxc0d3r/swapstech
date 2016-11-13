@@ -126,6 +126,9 @@ resource "aws_instance" "vpn" {
   user_data = "${template_file.userdata_vpn.rendered}"
   associate_public_ip_address = true
   source_dest_check = false
+  root_block_device {
+    volume_size = "${lookup(var.root_vol_size, "vpn")}"
+  }
 }
 
 resource "aws_elb" "tomcat-lb" {
@@ -202,6 +205,9 @@ resource "aws_launch_configuration" "tomcat-lc" {
   user_data = "${template_file.userdata_tomcat.rendered}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${var.iam_instance_profile}"
+  root_block_device {
+    volume_size = "${lookup(var.root_vol_size, "tomcat")}"
+  }
 }
 
 resource "aws_elb" "rabbitmq-lb" {
@@ -284,6 +290,9 @@ resource "aws_launch_configuration" "rabbitmq-lc" {
   user_data = "${template_file.userdata_rabbitmq.rendered}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${var.iam_instance_profile}"
+  root_block_device {
+    volume_size = "${lookup(var.root_vol_size, "rabbitmq")}"
+  }
 }
 
 resource "template_file" "userdata_mongo_slave" {
@@ -311,4 +320,11 @@ resource "aws_instance" "mongo-slave" {
   iam_instance_profile = "${var.iam_instance_profile}"
   subnet_id = "${aws_subnet.az2-private.id}"
   user_data = "${template_file.userdata_mongo_slave.rendered}"
+  root_block_device {
+    volume_size = "${lookup(var.root_vol_size, "mongo-slave")}"
+  }
+  ebs_block_device {
+    device_name = "/dev/sdf"
+    volume_size = "${lookup(var.ebs_vol_size, "mongo-slave")}"
+  }
 }
