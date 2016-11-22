@@ -21,6 +21,16 @@ execute 'enable_rabbitmq_plugins' do
   not_if 'grep autocluster /etc/rabbitmq/enabled_plugins'
 end
 
+bash 'create_user' do
+  code <<-EOH
+    rabbitmqctl add_user #{node['rabbitmq']['user']['name']} #{node['rabbitmq']['user']['password']}
+    rabbitmqctl set_user_tags #{node['rabbitmq']['user']['name']} administrator
+    rabbitmqctl set_permissions -p / #{node['rabbitmq']['user']['name']} ".*" ".*" ".*"
+    touch /etc/rabbitmq/userisupdated
+  EOH
+  creates "/etc/rabbitmq/userisupdated"
+end
+
 cookbook_file '/var/lib/rabbitmq/.erlang.cookie' do
   source 'erlang.cookie'
   owner 'rabbitmq'

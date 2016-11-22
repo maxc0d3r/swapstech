@@ -1,0 +1,7 @@
+.terraform
+credentials
+terraform.tfstate
+terraform.tfstate.backup
+.DS_Store
+id_rsa
+id_rsa.pub

@@ -74,4 +74,14 @@ sleep 10
 mongo <<EOF
 rs.addArb($ARBITER_IP)
 EOF
+mongo <<EOF
+use admin
+
+db.createUser(
+{
+user: "${mongo_admin_user}",
+pwd: "${mongo_admin_password}",
+roles: [ "root" ]
+}
+)
 fi

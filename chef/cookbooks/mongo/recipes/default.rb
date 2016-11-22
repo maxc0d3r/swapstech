@@ -26,14 +26,15 @@ is_journal_enabled = true
 if node['mongo_instance_type'] == 'arbiter'
   is_journal_enabled = false
 end
-  
+
 template '/etc/mongodb.conf' do
   source 'mongodb.conf.erb'
   owner 'root'
   group 'root'
   mode '0644'
   variables(
-    :is_journal_enabled => is_journal_enabled
+    :is_journal_enabled => is_journal_enabled,
+    :replSetName => node['mongo']['replSetName']
   )
 end
 
