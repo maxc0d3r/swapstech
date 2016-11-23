@@ -133,37 +133,46 @@ resource "aws_instance" "vpn" {
   }
 }
 
-resource "aws_elb" "tomcat-lb" {
+resource "aws_alb" "tomcat-lb" {
   name = "tomcat-lb"
-
+  internal = false
   subnets = ["${aws_subnet.az1-public.id}","${aws_subnet.az2-public.id}"]
   security_groups = ["${aws_security_group.web.id}"]
-  listener {
-    instance_port = 8080
-    instance_protocol = "http"
-    lb_port = 80
-    lb_protocol = "http"
+  enable_deletion_protection = true
+  tags {
+    Environment = "production"
   }
+}
+
+resource "aws_alb_listener" "tomcat-lb-li" {
+  load_balancer_arn = "${aws_alb.tomcat-lb.arn}"
+  port = "80"
+  protocol = "HTTP"
+  default_action {
+    target_group_arn = "${aws_alb_target_group.tomcat-lb-tg.arn}"
+    type = "forward"
+  }
+}
+
+resource "aws_alb_target_group" "tomcat-lb-tg" {
+  name = "tomcat-lb-tg"
+  port = 8080
+  protocol = "HTTP"
+  vpc_id = "${aws_vpc.default.id}"
   health_check {
     healthy_threshold = 2
     unhealthy_threshold = 2
     timeout = 3
-    target = "HTTP:8080/"
     interval = 30
   }
-  cross_zone_load_balancing = true
-  tags {
-    Name = "tomcat-lb"
-  }
 }
-
 
 resource "aws_route53_record" "tomcat-lb" {
   zone_id = "${aws_route53_zone.public_zone.zone_id}"
   name = "${var.tomcat_lb_name}"
   type = "CNAME"
   ttl = "300"
-  records = ["${aws_elb.tomcat-lb.dns_name}"]
+  records = ["${aws_alb.tomcat-lb.dns_name}"]
 }
 
 resource "template_file" "userdata_tomcat" {
@@ -194,7 +203,7 @@ resource "aws_autoscaling_group" "tomcat-asg" {
   desired_capacity = "${lookup(var.asgs,"tomcat.desired")}"
   force_delete = true
   launch_configuration = "${aws_launch_configuration.tomcat-lc.name}"
-  load_balancers = ["${aws_elb.tomcat-lb.name}"]
+  target_group_arns = ["${aws_alb_target_group.tomcat-lb-tg.arn}"]
   tag {
     key = "ASG-Name"
     value = "tomcat-asg"

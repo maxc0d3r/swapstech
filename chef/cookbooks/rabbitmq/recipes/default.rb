@@ -23,6 +23,7 @@ end
 
 bash 'create_user' do
   code <<-EOH
+    rabbitmqctl change_password guest #{node['rabbitmq']['user']['password']}
     rabbitmqctl add_user #{node['rabbitmq']['user']['name']} #{node['rabbitmq']['user']['password']}
     rabbitmqctl set_user_tags #{node['rabbitmq']['user']['name']} administrator
     rabbitmqctl set_permissions -p / #{node['rabbitmq']['user']['name']} ".*" ".*" ".*"

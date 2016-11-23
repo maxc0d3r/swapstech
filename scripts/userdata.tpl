@@ -60,9 +60,17 @@ chef-solo -c /tmp/swapstech/chef/solo.rb -o ${run_list}
 
 grep 'mongo-master' /tmp/service
 if [ $? -eq 0 ]; then
-sleep 60
+sleep 300
 SLAVE_IP=`aws ec2 describe-instances --region ${aws_region} --filters 'Name=instance-state-name,Values=running' 'Name=tag:Name,Values=mongo-slave*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
 ARBITER_IP=`aws ec2 describe-instances --region ${aws_region} --filters 'Name=instance-state-name,Values=running' 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+while [ "x$SLAVE_IP" == "x" ]; do
+  sleep 300
+  SLAVE_IP=`aws ec2 describe-instances --region ${aws_region} --filters 'Name=instance-state-name,Values=running' 'Name=tag:Name,Values=mongo-slave*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+done
+while [ "x$ARBITER_IP" == "x" ]; do
+  sleep 300
+  ARBITER_IP=`aws ec2 describe-instances --region ${aws_region} --filters 'Name=instance-state-name,Values=running' 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
+done
 mongo <<EOF
 rs.initiate()
 EOF
@@ -84,6 +92,8 @@ pwd: "${mongo_admin_password}",
 roles: [ "root" ]
 }
 )
+EOF
+
 cat > /etc/default/mongodb <<EOF
   export MONGO_AUTH=yes
 EOF
