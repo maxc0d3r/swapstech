@@ -114,7 +114,7 @@ resource "template_file" "userdata_vpn" {
     openvpn_route_netmask = "${var.openvpn_route_netmask}"
     remote_ip = "${var.remote_ip}"
     mongo_admin_user = "${var.mongo_admin_user}"
-    mongo_admin_password = "${var.mongo_admin_user}"
+    mongo_admin_password = "${var.mongo_admin_password}"
   }
 }
 
@@ -181,7 +181,7 @@ resource "template_file" "userdata_tomcat" {
     openvpn_route_netmask = "${var.openvpn_route_netmask}"
     remote_ip = "${var.remote_ip}"
     mongo_admin_user = "${var.mongo_admin_user}"
-    mongo_admin_password = "${var.mongo_admin_user}"
+    mongo_admin_password = "${var.mongo_admin_password}"
   }
 }
 
@@ -268,7 +268,7 @@ resource "template_file" "userdata_rabbitmq" {
     openvpn_route_netmask = "${var.openvpn_route_netmask}"
     remote_ip = "${var.remote_ip}"
     mongo_admin_user = "${var.mongo_admin_user}"
-    mongo_admin_password = "${var.mongo_admin_user}"
+    mongo_admin_password = "${var.mongo_admin_password}"
   }
 }
 
@@ -316,7 +316,7 @@ resource "template_file" "userdata_mongo_slave" {
     openvpn_route_netmask = "${var.openvpn_route_netmask}"
     remote_ip = "${var.remote_ip}"
     mongo_admin_user = "${var.mongo_admin_user}"
-    mongo_admin_password = "${var.mongo_admin_user}"
+    mongo_admin_password = "${var.mongo_admin_password}"
   }
 }
 

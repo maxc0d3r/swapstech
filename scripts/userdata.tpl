@@ -71,17 +71,26 @@ while [ "x$ARBITER_IP" == "x" ]; do
   sleep 300
   ARBITER_IP=`aws ec2 describe-instances --region ${aws_region} --filters 'Name=instance-state-name,Values=running' 'Name=tag:Name,Values=mongo-arbiter*' --query 'Reservations[0].Instances[0].PrivateIpAddress'`
 done
+
+echo "Initiating ReplicaSet"
 mongo <<EOF
 rs.initiate()
 EOF
+
 sleep 10
+echo "Adding slave $SLAVE_IP"
 mongo <<EOF
 rs.add($SLAVE_IP)
 EOF
+
 sleep 10
+echo "Adding arbiter $ARBITER_IP"
 mongo <<EOF
 rs.addArb($ARBITER_IP)
 EOF
+
+sleep 10
+echo "Setting up admin user"
 mongo <<EOF
 use admin
 
