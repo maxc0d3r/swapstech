@@ -22,6 +22,13 @@ cookbook_file '/opt/mongodb/keyfile' do
   mode '0600'
 end
 
+cookbook_file '/etc/init.d/mongodb' do
+  source 'init'
+  owner 'root'
+  group 'root'
+  mode '0755'
+end
+
 is_journal_enabled = true
 if node['mongo_instance_type'] == 'arbiter'
   is_journal_enabled = false
@@ -39,5 +46,5 @@ template '/etc/mongodb.conf' do
 end
 
 service 'mongodb' do
-  action [:enable, :restart]
+  action [:enable, :start]
 end

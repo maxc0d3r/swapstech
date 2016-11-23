@@ -52,3 +52,11 @@ variable "tomcat_lb_name" {
 variable "rabbitmq_lb_name" {
   default = "amqp"
 }
+
+variable "mongo_admin_user" {
+  default = "mongo_admin"
+}
+
+variable "mongo_admin_password" {
+  default = "p@ssw0rd"
+}

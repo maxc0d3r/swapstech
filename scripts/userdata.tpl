@@ -84,4 +84,9 @@ pwd: "${mongo_admin_password}",
 roles: [ "root" ]
 }
 )
+cat > /etc/default/mongodb <<EOF
+  export MONGO_AUTH=yes
+EOF
+
+service mongodb restart
 fi
