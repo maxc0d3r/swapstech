@@ -88,24 +88,4 @@ echo "Adding arbiter $ARBITER_IP"
 mongo <<EOF
 rs.addArb($ARBITER_IP)
 EOF
-
-sleep 10
-echo "Setting up admin user"
-mongo <<EOF
-use admin
-
-db.createUser(
-{
-user: "${mongo_admin_user}",
-pwd: "${mongo_admin_password}",
-roles: [ "root" ]
-}
-)
-EOF
-
-cat > /etc/default/mongodb <<EOF
-  export MONGO_AUTH=yes
-EOF
-
-service mongodb restart
 fi
