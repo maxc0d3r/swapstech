@@ -36,6 +36,7 @@ template '/etc/mongodb.conf' do
     :is_journal_enabled => is_journal_enabled,
     :replSetName => node['mongo']['replSetName']
   )
+  notifies :restart, 'service[mongodb]', :delayed
 end
 
 service 'mongodb' do
