@@ -63,10 +63,12 @@ cat > /tmp/nodes.json <<EOF
   "environment": "${environment}",
   "service": "${service}",
   "filesystems": [
-    "name": "mongo",
-    "type": "ext4",
-    "device": "/dev/xvdf",
-    "mount": "/data/mongo"
+    {
+      "name": "mongo",
+      "type": "ext4",
+      "device": "/dev/xvdf",
+      "mount": "/data/mongo"
+    }
   ]
 }
 EOF
