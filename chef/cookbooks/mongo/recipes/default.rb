@@ -9,6 +9,12 @@ package 'mongodb' do
   version node['mongo']['version']
 end
 
+directory '/data/mongo' do
+  owner 'mongodb'
+  group 'mongodb'
+  mode '0755'
+end
+
 directory '/opt/mongodb' do
   owner 'mongodb'
   group 'mongodb'
