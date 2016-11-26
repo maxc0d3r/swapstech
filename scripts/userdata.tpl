@@ -25,8 +25,17 @@ curl -L https://www.opscode.com/chef/install.sh | sudo bash
 
 cd /tmp; git clone git@github.com:maxc0d3r/swapstech.git
 
+SERVICE="default"
 grep 'openvpn' /tmp/service
 if [ $? -eq 0 ]; then
+  SERVICE="openvpn"
+fi
+grep 'mongo' /tmp/service
+if [ $? -eq 0 ]; then
+  SERVICE="mongo"
+fi
+
+if [ $SERVICE == 'openvpn' ]; then
 cat > /tmp/nodes.json <<EOF
 {
   "aws_region": "${aws_region}",
@@ -45,6 +54,20 @@ cat > /tmp/nodes.json <<EOF
       "remote_ip" : "${remote_ip}"
     }
   }
+}
+EOF
+elif [ $SERVICE == 'mongo' ]; then
+cat > /tmp/nodes.json <<EOF
+{
+  "aws_region": "${aws_region}",
+  "environment": "${environment}",
+  "service": "${service}",
+  "filesystems": [
+    "name": "mongo",
+    "type": "ext4",
+    "device": "/dev/xvdf",
+    "mount": "/data/mongo"
+  ]
 }
 EOF
 else
