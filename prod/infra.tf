@@ -8,7 +8,13 @@ resource "aws_security_group" "web" {
     to_port = 80
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  }
+  },
+  ingress {
+    from_port = 8080
+    to_port = 8080
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  },
   ingress {
     from_port = 443
     to_port = 443
@@ -215,7 +221,7 @@ resource "aws_launch_configuration" "tomcat-lc" {
   name = "tomcat-lc"
   image_id = "${lookup(var.amis, var.aws_region)}"
   instance_type = "${lookup(var.instance_type, "tomcat")}"
-  security_groups = ["${aws_security_group.internal.id}"]
+  security_groups = ["${aws_security_group.internal.id}","${aws_security_group.web.id}"]
   user_data = "${template_file.userdata_tomcat.rendered}"
   key_name = "${var.key_name}"
   iam_instance_profile = "${var.iam_instance_profile}"

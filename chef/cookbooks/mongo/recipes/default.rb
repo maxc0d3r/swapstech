@@ -13,11 +13,15 @@ execute 'apt-get-update' do
 end
 
 # Install mongodb server
-package 'mongodb-org' do
-  options '-o Dpkg::Options::="--force-confold" --force-yes'
+['mongodb-org','mongodb-org-server','mongodb-org-shell','mongodb-org-mongos','mongodb-org-tools'].each do |pkg|
+package pkg do
   version node['mongo']['version']
+  options '--allow-unauthenticated'
   action :install
 end
+end
+
+
 
 directory '/data/mongo' do
   owner 'mongodb'
@@ -49,8 +53,8 @@ template '/etc/init/mongodb.conf' do
   group 'root'
   mode '0644'
   variables(
-    :ulimit => node['mongo']['ulimit']
-    :provides => 'mongod'
+    :ulimit => node['mongo']['ulimit'],
+    :provides => 'mongod',
     :sysconfig_file => '/etc/default/mongodb'
   )
 end
