@@ -1,8 +1,8 @@
 # First, we need to update our package list
 apt_repository 'mongodb' do
-  uri "http://downloads-distro.mongodb.org/repo/#{node[:mongodb][:apt_repo]}"
-  distribution 'dist'
-  components ['10gen']
+  uri "http://repo.mongodb.org/apt/ubuntu"
+  distribution 'xenial/mongodb-org/3.2'
+  components ['multiverse']
   keyserver 'hkp://keyserver.ubuntu.com:80'
   key '7F0CEB10'
   action :add
@@ -64,9 +64,9 @@ template '/etc/mongodb.conf' do
     :is_journal_enabled => is_journal_enabled,
     :replSetName => node['mongo']['replSetName']
   )
-  notifies :restart, 'service[mongodb]', :delayed
+  notifies :restart, 'service[mongod]', :delayed
 end
 
-service 'mongodb' do
+service 'mongod' do
   action [:enable, :start]
 end
