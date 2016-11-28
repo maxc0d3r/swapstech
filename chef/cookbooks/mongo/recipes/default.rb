@@ -14,8 +14,9 @@ end
 
 # Install mongodb server
 package 'mongodb-org' do
-  action :install
+  options '-o Dpkg::Options::="--force-confold" --force-yes'
   version node['mongo']['version']
+  action :install
 end
 
 directory '/data/mongo' do
@@ -40,6 +41,18 @@ end
 is_journal_enabled = true
 if node['mongo_instance_type'] == 'arbiter'
   is_journal_enabled = false
+end
+
+template '/etc/init/mongodb.conf' do
+  source 'mongo_upstart.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables(
+    :ulimit => node['mongo']['ulimit']
+    :provides => 'mongod'
+    :sysconfig_file => '/etc/default/mongodb'
+  )
 end
 
 template '/etc/mongodb.conf' do
