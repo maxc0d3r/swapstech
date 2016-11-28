@@ -178,7 +178,7 @@ resource "aws_route53_record" "tomcat-lb" {
   name = "${var.tomcat_lb_name}"
   type = "CNAME"
   ttl = "300"
-  records = ["${aws_elb.tomcat-lb.dns_name}"]
+  records = ["${aws_alb.tomcat-lb.dns_name}"]
 }
 
 resource "template_file" "userdata_tomcat" {
