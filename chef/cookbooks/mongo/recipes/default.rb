@@ -59,7 +59,7 @@ template '/etc/init/mongodb.conf' do
   )
 end
 
-template '/etc/mongodb.conf' do
+template '/etc/mongod.conf' do
   source 'mongodb.conf.erb'
   owner 'root'
   group 'root'
