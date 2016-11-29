@@ -47,16 +47,11 @@ if node['mongo_instance_type'] == 'arbiter'
   is_journal_enabled = false
 end
 
-template '/etc/init/mongodb.conf' do
-  source 'mongo_upstart.erb'
+template '/etc/systemd/system/mongodb.service' do
+  source 'mongo_systemd.erb'
   owner 'root'
   group 'root'
   mode '0644'
-  variables(
-    :ulimit => node['mongo']['ulimit'],
-    :provides => 'mongod',
-    :sysconfig_file => '/etc/default/mongodb'
-  )
 end
 
 template '/etc/mongod.conf' do
@@ -71,6 +66,6 @@ template '/etc/mongod.conf' do
   notifies :restart, 'service[mongod]', :delayed
 end
 
-service 'mongod' do
+service 'mongodb' do
   action [:enable, :start]
 end
