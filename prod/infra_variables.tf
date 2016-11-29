@@ -13,13 +13,13 @@ variable "asgs" {
 variable "instance_type" {
   type = "map"
   default = {
-    tomcat = "t2.micro",
-    rabbitmq = "t2.micro"
-    mongo-master = "t2.micro"
-    mongo-slave = "t2.micro"
-    mongo-arbiter = "t2.micro"
-    vpn = "t2.micro"
-    nat = "t2.micro"
+    tomcat = "t2.large",
+    rabbitmq = "t2.large"
+    mongo-master = "t2.large"
+    mongo-slave = "t2.large"
+    mongo-arbiter = "t2.large"
+    vpn = "t2.large"
+    nat = "t2.large"
   }
 }
 
