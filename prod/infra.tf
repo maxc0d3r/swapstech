@@ -49,7 +49,7 @@ resource "aws_security_group" "internal" {
     from_port = 0
     to_port = 0
     protocol = "-1"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = ["${var.vpc_cidr}","${var.peer_vpc_cidr}"]
   }
   egress {
     from_port = 0
